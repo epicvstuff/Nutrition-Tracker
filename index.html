@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Nutrition Calculator (HTML/JS)</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Include PapaParse library for easy CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Meal Nutrition Calculator (Client-Side)</h1>
+
+        <!-- Status/Message Area -->
+        <div id="status-message" class="flash info">Loading food data... Please wait.</div>
+
+        <!-- Add Food Form -->
+        <div class="form-section">
+            <h2>Add Food to Meal</h2>
+            <form id="add-food-form">
+                <input type="text" id="food-name-input" placeholder="Enter exact food name" required disabled>
+                <button type="submit" id="add-food-button" disabled>Add Food</button>
+            </form>
+             <p class="hint">Hint: Try names like 'Apple, raw, with skin', 'Milk, whole, 3.25% milkfat', 'Bread, wheat'. Check the CSV for exact names.</p>
+        </div>
+
+        <!-- Current Meal Section -->
+        <div class="meal-section">
+            <h2>Current Meal Items</h2>
+            <ul id="meal-list">
+                <!-- Meal items will be added here by JavaScript -->
+            </ul>
+            <p id="no-items-message">No items added to the meal yet.</p>
+            <div class="meal-actions">
+                <button id="calculate-button" class="calculate-button" disabled>Calculate Nutrition</button>
+                <button id="clear-button" class="clear-button" disabled>Clear Meal</button>
+            </div>
+        </div>
+
+        <!-- Nutrition Results Section -->
+        <div id="results-section" class="results-section" style="display: none;">
+            <h2>Total Meal Nutrition</h2>
+            <table id="results-table">
+                <thead>
+                    <tr>
+                        <th>Nutrient</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Results will be added here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+    </div> <!-- End Container -->
+
+    <script>
+        // --- Global Variables ---
+        let foodData = []; // Will hold the parsed CSV data (array of objects)
+        let nutrientColumns = []; // Will hold the names of nutrient columns
+        let currentMeal = []; // Will hold the descriptions of food items in the meal
+        let foodLookup = {}; // For quick lookup by lowercase description
+
+        // --- DOM Element References ---
+        const statusMessage = document.getElementById('status-message');
+        const foodInput = document.getElementById('food-name-input');
+        const addButton = document.getElementById('add-food-button');
+        const addForm = document.getElementById('add-food-form');
+        const mealList = document.getElementById('meal-list');
+        const noItemsMessage = document.getElementById('no-items-message');
+        const calculateButton = document.getElementById('calculate-button');
+        const clearButton = document.getElementById('clear-button');
+        const resultsSection = document.getElementById('results-section');
+        const resultsTableBody = document.querySelector('#results-table tbody');
+
+        // --- Functions ---
+
+        function displayMessage(message, type = 'info') {
+            statusMessage.textContent = message;
+            statusMessage.className = `flash ${type}`; // Update class for styling
+            statusMessage.style.display = 'block'; // Ensure it's visible
+             // Optional: Hide message after a few seconds
+            /*
+            setTimeout(() => {
+                if (statusMessage.textContent === message) { // Only hide if message hasn't changed
+                   statusMessage.style.display = 'none';
+                }
+            }, 5000);
+            */
+        }
+
+        function formatNumber(value) {
+            if (typeof value !== 'number' || isNaN(value)) {
+                return 'N/A';
+            }
+            if (value === 0) return '0';
+            const absValue = Math.abs(value);
+            if (absValue < 0.01) return value.toFixed(3);
+            if (absValue < 100) return value.toFixed(2);
+            return value.toFixed(1);
+        }
+
+        function updateMealListDisplay() {
+            mealList.innerHTML = ''; // Clear existing list
+            if (currentMeal.length > 0) {
+                currentMeal.forEach(description => {
+                    const li = document.createElement('li');
+                    li.textContent = description;
+                    mealList.appendChild(li);
+                });
+                noItemsMessage.style.display = 'none';
+                calculateButton.disabled = false;
+                clearButton.disabled = false;
+            } else {
+                noItemsMessage.style.display = 'block';
+                calculateButton.disabled = true;
+                clearButton.disabled = true;
+                 // Also hide results if meal is empty
+                resultsSection.style.display = 'none';
+            }
+             // Clear results when meal changes before recalculation
+            resultsTableBody.innerHTML = '';
+            resultsSection.style.display = 'none';
+
+        }
+
+        function addFood(event) {
+            event.preventDefault(); // Prevent form submission reload
+            const foodNameInput = foodInput.value.trim();
+            if (!foodNameInput) {
+                displayMessage("Please enter a food name.", "warning");
+                return;
+            }
+
+            const searchKey = foodNameInput.toLowerCase();
+            const foundFood = foodLookup[searchKey]; // Use the lookup map
+
+            if (foundFood) {
+                const description = foundFood.Description; // Get original case description
+                if (!currentMeal.includes(description)) {
+                    currentMeal.push(description);
+                    updateMealListDisplay();
+                    displayMessage(`Added: ${description}`, "success");
+                    foodInput.value = ''; // Clear input field
+                } else {
+                    displayMessage(`'${description}' is already in the meal.`, "info");
+                }
+            } else {
+                 // Basic suggestion if exact match fails (less efficient than Python's .contains)
+                 let suggestions = [];
+                 for (const key in foodLookup) {
+                     if (key.includes(searchKey)) {
+                         suggestions.push(foodLookup[key].Description);
+                         if (suggestions.length >= 5) break; // Limit suggestions
+                     }
+                 }
+                 if (suggestions.length > 0) {
+                     displayMessage(`Food '${foodNameInput}' not found exactly. Did you mean: ${suggestions.join(', ')}?`, "warning");
+                 } else {
+                    displayMessage(`Food item '${foodNameInput}' not found. Please check spelling.`, "error");
+                 }
+            }
+        }
+
+        function calculateNutrition() {
+            if (currentMeal.length === 0) {
+                displayMessage("No items in the meal to calculate.", "warning");
+                return;
+            }
+
+            const mealTotals = {};
+            nutrientColumns.forEach(col => mealTotals[col] = 0); // Initialize totals
+
+            let itemsFound = 0;
+            currentMeal.forEach(description => {
+                // Find the food object corresponding to the description
+                // This is less efficient than Python's isin but works
+                 const foodItem = foodData.find(item => item.Description === description);
+
+                if (foodItem) {
+                    itemsFound++;
+                    nutrientColumns.forEach(nutrient => {
+                        const value = parseFloat(foodItem[nutrient]); // Ensure it's a number
+                        if (!isNaN(value)) {
+                            mealTotals[nutrient] += value;
+                        }
+                    });
+                }
+            });
+
+            if (itemsFound > 0) {
+                resultsTableBody.innerHTML = ''; // Clear previous results
+                nutrientColumns.forEach(nutrient => {
+                    const tr = document.createElement('tr');
+                    const tdNutrient = document.createElement('td');
+                    const tdValue = document.createElement('td');
+                    tdNutrient.textContent = nutrient;
+                    tdValue.textContent = formatNumber(mealTotals[nutrient]);
+                    tr.appendChild(tdNutrient);
+                    tr.appendChild(tdValue);
+                    resultsTableBody.appendChild(tr);
+                });
+                resultsSection.style.display = 'block'; // Show results table
+                displayMessage("Nutrition calculated successfully.", "success");
+            } else {
+                 displayMessage("Could not find data for items in the meal. Calculation failed.", "error");
+                 resultsSection.style.display = 'none';
+            }
+        }
+
+        function clearMeal() {
+            currentMeal = [];
+            updateMealListDisplay(); // This will hide results and disable buttons
+            foodInput.value = ''; // Clear input field
+            displayMessage("Meal cleared.", "info");
+        }
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Fetch and parse the CSV data when the page is ready
+            Papa.parse('food.csv', {
+                download: true, // Important: tells PapaParse to fetch the file
+                header: true,   // Treat the first row as headers
+                skipEmptyLines: true,
+                dynamicTyping: false, // Keep everything as string initially to avoid bad numeric parsing
+                complete: function(results) {
+                    console.log("CSV Parsed:", results);
+
+                    if (results.errors.length > 0) {
+                         displayMessage("Error parsing CSV file. Check console for details.", "error");
+                         console.error("PapaParse Errors:", results.errors);
+                         return;
+                    }
+                     if (!results.data || results.data.length === 0) {
+                         displayMessage("CSV file seems empty or failed to load.", "error");
+                         return;
+                    }
+
+                    foodData = results.data;
+                    // Identify nutrient columns (exclude Description and Category)
+                    const firstItemKeys = Object.keys(foodData[0] || {});
+                    nutrientColumns = firstItemKeys.filter(key => key !== 'Description' && key !== 'Category');
+
+                     // Convert nutrient columns to numbers and build lookup map
+                    foodData.forEach(item => {
+                        nutrientColumns.forEach(col => {
+                            item[col] = parseFloat(item[col]); // Convert to number, becomes NaN if invalid
+                        });
+                        // Create lookup entry (handle potential missing Description)
+                        if (item.Description) {
+                           foodLookup[item.Description.toLowerCase().trim()] = item;
+                        }
+                    });
+
+
+                    console.log("Nutrient Columns:", nutrientColumns);
+                    console.log(`Loaded ${foodData.length} food items.`);
+
+                    // Enable UI elements now that data is loaded
+                    foodInput.disabled = false;
+                    addButton.disabled = false;
+                    // Calculate/Clear buttons are enabled when items are added
+
+                    displayMessage(`Successfully loaded ${foodData.length} food items. Ready to add foods.`, 'success');
+
+                    // Add event listeners
+                    addForm.addEventListener('submit', addFood);
+                    calculateButton.addEventListener('click', calculateNutrition);
+                    clearButton.addEventListener('click', clearMeal);
+
+                },
+                error: function(error, file) {
+                    displayMessage(`Error fetching or reading CSV file: ${error}. Check if 'food.csv' is in the same folder and the local server is running.`, "error");
+                    console.error("PapaParse Fetch Error:", error, file);
+                }
+            });
+
+             // Initial display setup
+             updateMealListDisplay();
+        });
+
+    </script>
+
+</body>
+</html>
