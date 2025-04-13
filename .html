@@ -1,0 +1,97 @@
+<html>
+    <head> 
+        
+        <title>Nutrition Track</title>
+        <link rel='stylesheet' href=".css">
+    </head>
+    
+    <body>
+        
+        <h1 id="heading">Nutrition Track</h1>
+
+        
+            
+            <button onclick='filterCards(this);' class=color>Calorie checker</button>
+            
+
+        <div class ="cards">
+            <div class="idk">
+                <p>Take a photo and see the calories</p>
+            </div>
+            <div>
+                <img class="idk2" src="C:\Users\f_enk\Downloads\5ac67d6ffacba81f008b45e8.webp">
+            </div>
+            <div class="idk3">
+                <p> Take control of your diet</p>
+            </div>
+
+            <div>
+                
+                <img class="idk4" src="C:\Users\f_enk\Downloads\maxresdefault.jpg">
+            </div>
+
+            <div class="e">
+                <p>Find how much calories it actually is</p>
+            </div>
+
+            <div>
+                
+                
+            
+
+            <p style="background-image: url('C:\Users\f_enk\Downloads\nm-superfoods-through-the-decades-feature.jpg');"></p>
+        </div>
+
+
+            
+            
+            
+
+            
+            <div style="position: relative; top: -650px;">
+                <img class="slide-image" src="C:\Users\f_enk\Downloads\how-to-take-instagram-food-pictures-with-your-phone-17406-1s-7406.jpg" alt="f">
+                </div>
+            
+
+            
+
+            
+            
+            
+
+
+
+        </div>
+
+        
+        
+    
+
+    <script>
+        function filterCards(event) {
+        var clicked = event.currentTarget;
+        var label = $(clicked).text();
+        $('.card').hide();
+        var selected = $(clicked).val();
+        $('.' + selected).show();
+        if (selected == 'card') {
+          $('#heading').text(label);
+        }
+        else {
+        $('#heading').text(label);
+        }
+        $('.active').removeClass('active');
+        $(clicked).addClass('active');
+      }
+      $("button").click(filterCards);
+
+    
+
+
+
+
+
+</script>
+</body>
+   
+</html>
