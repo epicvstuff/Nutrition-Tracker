@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Food Item Recognition Demo</title>
+  </head>
+  <body>
+    <h1>Food Item Recognition Demo</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="file" accept="image/*" required>
+      <button type="submit">Upload and Classify</button>
+    </form>
+    <h2>Results:</h2>
+    <pre id="results"></pre>
+
+    <script>
+      // When the form is submitted, prevent the default page reload and use fetch to send the image.
+      document.getElementById("uploadForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        fetch("/classify", {
+          method: "POST",
+          body: formData
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok, status: ' + response.status);
+            }
+            return response.json();
+          })
+          .then(data => {
+            document.getElementById("results").textContent = JSON.stringify(data, null, 2);
+          })
+          .catch(err => {
+            document.getElementById("results").textContent = "Error: " + err;
+          });
+      });
+    </script>
+  </body>
+</html>
+

@@ -1,2 +1,2 @@
-# warrior-hackathon
+# warrior-hacakathon
 Codebase for Warrior Hacks Hackathon
