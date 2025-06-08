@@ -36,4 +36,23 @@ __pycache__/
 .Python
 env/
 venv/
-ENV/ 
+ENV/
+
+# Training data and large files (but keep the trained model)
+backend/training/archive/
+dataset/
+data/
+archive/
+
+# Large model files (too big for GitHub)
+models/*.h5
+models/*.hdf5
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Model training outputs
+training_history.png
+model_summary.txt 

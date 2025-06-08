@@ -57,8 +57,8 @@ nutrition-tracker/
 │   │   ├── components/    # UI components
 │   │   └── utils/         # Utility functions
 │   └── assets/            # Static assets
-├── models/                # Trained ML models
-│   └── fruit_vegetable_classifier.h5  # Trained CNN model
+├── models/                # Trained ML models (see models/README.md)
+│   └── fruit_vegetable_classifier.h5  # Large model (not in repo)
 ├── tests/                 # Test files
 └── README.md              # This file
 ```
@@ -76,21 +76,35 @@ cd backend
 pip install -r requirements.txt
 ```
 
-### 2. Start the Backend API
+### 2. Get the Trained Model (Required)
+Since the model is too large for GitHub (218MB), choose one option:
+```bash
+# Option A: Train your own model (requires dataset)
+cd backend/training
+python classifier.py
+
+# Option B: Download pre-trained model (contact maintainer)
+# See models/README.md for details
+
+# Option C: Use mock predictions (for development)
+# Application will automatically use mock data if no model found
+```
+
+### 3. Start the Backend API
 ```bash
 # From project root directory
 cd /path/to/Nutrition-Tracker
 python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-### 3. Start the Frontend Server
+### 4. Start the Frontend Server
 ```bash
 # In a new terminal, from project root
 cd frontend
 python -m http.server 3000
 ```
 
-### 4. Access the Application
+### 5. Access the Application
 - **Frontend UI**: http://127.0.0.1:3000
 - **Backend API**: http://127.0.0.1:8000
 - **API Documentation**: http://127.0.0.1:8000/docs
