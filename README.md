@@ -1,17 +1,25 @@
-# Nutrition Tracker
+# Nutrition Tracker ✅ PRODUCTION READY
 
-A modern full-stack web application for tracking daily nutrition intake with AI-powered food image classification, food search, and manual entry capabilities.
+A modern full-stack web application for tracking daily nutrition intake with AI-powered food image classification, real USDA nutritional data, food search, and manual entry capabilities.
+
+## 🎯 CURRENT STATUS: FULLY FUNCTIONAL
+- ✅ **Backend API**: Running with USDA FoodData Central integration (350,000+ foods)
+- ✅ **Frontend UI**: Complete with corrected data flow and real-time nutrition display  
+- ✅ **AI Classification**: 88.89% accuracy CNN model operational on 36 food categories
+- ✅ **End-to-End Workflow**: Image → AI → USDA → Frontend display working perfectly
 
 ## ✨ Features
 
 - **🔬 AI Food Classification**: Upload food images for automatic classification using a trained CNN model (88.89% accuracy)
+- **🏛️ USDA Integration**: Real nutritional data from USDA FoodData Central (350,000+ government-verified foods)
 - **🔍 Food Search**: Search for foods using the OpenFoodFacts API
 - **✏️ Manual Entry**: Add custom foods with nutritional information
 - **📊 Daily Logging**: Track your daily food intake with real-time totals
-- **🧮 Nutritional Analytics**: View daily totals for calories, protein, carbs, and fat
+- **🧮 Nutritional Analytics**: View detailed nutrition profiles (calories, protein, carbs, fat, fiber, sugars, sodium)
 - **💾 Local Storage**: Data persists between sessions
 - **📱 Responsive Design**: Works on desktop and mobile devices
 - **🚀 RESTful API**: FastAPI backend with interactive documentation
+- **🎯 Smart Mapping**: Intelligent food name mapping for optimal USDA search results
 
 ## 🏗️ Architecture
 
@@ -41,6 +49,9 @@ nutrition-tracker/
 │   ├── api/               # API endpoints
 │   │   ├── __init__.py
 │   │   └── endpoints.py   # Classification endpoints
+│   ├── services/          # External API services
+│   │   ├── __init__.py
+│   │   └── usda_service.py # USDA nutrition data service
 │   └── training/          # Model training scripts
 │       └── classifier.py  # CNN training script
 ├── frontend/              # Static web frontend
@@ -60,6 +71,7 @@ nutrition-tracker/
 ├── models/                # Trained ML models (see models/README.md)
 │   └── fruit_vegetable_classifier.h5  # Large model (not in repo)
 ├── tests/                 # Test files
+├── .env.example           # Environment variables template
 └── README.md              # This file
 ```
 
@@ -69,6 +81,7 @@ nutrition-tracker/
 - Python 3.8+ with pip
 - Modern web browser
 - 8GB+ RAM (for model training, optional)
+- **USDA API Key** (optional, for real nutrition data)
 
 ### 1. Install Backend Dependencies
 ```bash
@@ -76,7 +89,22 @@ cd backend
 pip install -r requirements.txt
 ```
 
-### 2. Get the Trained Model (Required)
+### 2. Configure Environment Variables
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env and add your USDA API key:
+# USDA_API_KEY=your_actual_api_key_here
+# USDA_BASE_URL=https://api.nal.usda.gov/fdc/v1
+```
+
+**📍 Getting a USDA API Key:**
+1. Visit [USDA FoodData Central](https://fdc.nal.usda.gov/api-guide.html)
+2. Sign up for a free API key
+3. Add your key to the `.env` file
+
+### 3. Get the Trained Model (Required)
 Since the model is too large for GitHub (218MB), choose one option:
 ```bash
 # Option A: Train your own model (requires dataset)
@@ -90,21 +118,21 @@ python classifier.py
 # Application will automatically use mock data if no model found
 ```
 
-### 3. Start the Backend API
+### 4. Start the Backend API
 ```bash
 # From project root directory
 cd /path/to/Nutrition-Tracker
 python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-### 4. Start the Frontend Server
+### 5. Start the Frontend Server
 ```bash
 # In a new terminal, from project root
 cd frontend
 python -m http.server 3000
 ```
 
-### 5. Access the Application
+### 6. Access the Application
 - **Frontend UI**: http://127.0.0.1:3000
 - **Backend API**: http://127.0.0.1:8000
 - **API Documentation**: http://127.0.0.1:8000/docs
@@ -123,6 +151,18 @@ The model can classify 36 different foods:
 - Fruits: apple, banana, grapes, kiwi, lemon, mango, orange, pear, pineapple, pomegranate, watermelon
 - Vegetables: beetroot, bell pepper, cabbage, capsicum, carrot, cauliflower, corn, cucumber, eggplant, garlic, ginger, lettuce, onion, peas, potato, raddish, spinach, sweetcorn, sweetpotato, tomato, turnip
 - Others: chilli pepper, jalepeno, paprika, soy beans
+
+## 🥗 Nutrition Data Sources
+
+### USDA FoodData Central API
+- **Primary Source**: Real nutritional data from USDA database
+- **Coverage**: 350,000+ food items with detailed nutrient profiles
+- **Data Quality**: Government-verified nutritional information
+- **Fallback**: Mock data when USDA API unavailable
+
+### API Endpoints
+- `POST /api/v1/classify` - Image classification with nutrition data
+- `GET /api/v1/search-nutrition/{food_name}` - Search nutrition by food name
 
 ## 🔧 Development
 

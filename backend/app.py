@@ -5,6 +5,7 @@ import sys
 
 from .config import settings
 from .api.endpoints import router
+from .services.usda_service import usda_service
 
 # Configure logging
 logger.remove()
@@ -29,6 +30,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on startup."""
+    logger.info("Starting up Nutrition Tracker API...")
+    if settings.USDA_API_KEY:
+        logger.info("USDA API key configured - real nutrition data available")
+    else:
+        logger.warning("USDA API key not configured - using fallback nutrition data")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Clean up resources on shutdown."""
+    logger.info("Shutting down Nutrition Tracker API...")
+    await usda_service.close_session()
+    logger.info("USDA service session closed")
+
 # Include API router
 app.include_router(router, prefix=settings.API_V1_STR)
 
@@ -38,7 +55,8 @@ async def root():
     return {
         "name": settings.PROJECT_NAME,
         "version": "1.0.0",
-        "model_type": settings.MODEL_TYPE
+        "model_type": settings.MODEL_TYPE,
+        "usda_api_enabled": bool(settings.USDA_API_KEY)
     }
 
 if __name__ == "__main__":

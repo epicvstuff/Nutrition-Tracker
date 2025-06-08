@@ -61,8 +61,8 @@ class UploadComponent {
       const formData = new FormData();
       formData.append('file', file);
 
-      console.log('Sending request to:', 'http://localhost:8000/api/v1/classify');
-      const response = await fetch('http://localhost:8000/api/v1/classify', {
+      console.log('Sending request to:', 'http://127.0.0.1:8000/api/v1/classify');
+      const response = await fetch('http://127.0.0.1:8000/api/v1/classify', {
         method: 'POST',
         body: formData
       });

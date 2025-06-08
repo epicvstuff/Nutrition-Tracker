@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     IMG_WIDTH: int = 150
     IMG_HEIGHT: int = 150
     
+    # USDA API Settings
+    USDA_API_KEY: str = ""
+    USDA_BASE_URL: str = "https://api.nal.usda.gov/fdc/v1"
+    
     # Server Settings
     HOST: str = "127.0.0.1"
     PORT: int = 8000

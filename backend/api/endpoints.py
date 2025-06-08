@@ -5,6 +5,7 @@ import io
 from loguru import logger
 
 from ..models.cnn_model import CNNModel
+from ..services.usda_service import usda_service
 from ..config import settings
 
 router = APIRouter()
@@ -49,9 +50,23 @@ async def classify_image(file: UploadFile = File(...)):
                 detail=f"Failed to classify image: {str(e)}"
             )
         
-        # Get nutritional information
-        nutrition_info = model.get_nutritional_info(predicted_class)
-        logger.info(f"Nutrition info retrieved: {nutrition_info}")
+        # Get nutritional information from USDA API
+        try:
+            nutrition_info = await usda_service.get_nutrition_by_name(predicted_class)
+            
+            # If USDA data not available, fall back to model's basic info
+            if nutrition_info is None:
+                logger.warning(f"USDA data not available for '{predicted_class}', using fallback")
+                nutrition_info = model.get_nutritional_info(predicted_class)
+                nutrition_info["source"] = "fallback"
+            
+            logger.info(f"Nutrition info retrieved: {nutrition_info}")
+            
+        except Exception as e:
+            logger.error(f"Error fetching nutrition data: {str(e)}")
+            # Fall back to basic model data
+            nutrition_info = model.get_nutritional_info(predicted_class)
+            nutrition_info["source"] = "fallback"
         
         # Prepare response
         response = {
@@ -69,4 +84,32 @@ async def classify_image(file: UploadFile = File(...)):
         raise HTTPException(
             status_code=500,
             detail=f"Error processing image: {str(e)}"
+        )
+
+@router.get("/search-nutrition/{food_name}")
+async def search_nutrition(food_name: str):
+    """Search for nutritional information of a specific food item."""
+    try:
+        logger.info(f"Searching nutrition data for: {food_name}")
+        
+        # Get nutritional information from USDA API
+        nutrition_info = await usda_service.get_nutrition_by_name(food_name)
+        
+        if nutrition_info is None:
+            logger.warning(f"No nutrition data found for '{food_name}'")
+            raise HTTPException(
+                status_code=404,
+                detail=f"No nutritional data found for '{food_name}'"
+            )
+        
+        logger.info(f"Successfully retrieved nutrition data for: {food_name}")
+        return JSONResponse(content=nutrition_info)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error searching nutrition data: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error searching nutrition data: {str(e)}"
         ) 

@@ -45,13 +45,17 @@ class NutritionTracker {
 
   handleFoodClassified(data) {
     // Pre-fill the form with the classified food data
+    console.log('Received classification data:', data);
+    const nutritionInfo = data.nutrition_info || {};
+    console.log('Extracted nutrition info:', nutritionInfo);
+    
     this.foodForm.setSelectedFood({
       name: data.predicted_class,
-      nutrients: data.nutrients || {
-        calories: 0,
-        protein: 0,
-        carbs: 0,
-        fat: 0
+      nutrients: {
+        calories: nutritionInfo.calories || 0,
+        protein: nutritionInfo.protein || 0,
+        carbs: nutritionInfo.carbs || 0,
+        fat: nutritionInfo.fat || 0
       }
     });
   }
