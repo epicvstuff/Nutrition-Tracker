@@ -1,0 +1,83 @@
+.results-container {
+  display: none;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.results-card {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.results-card h3 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-item .label {
+  color: #666;
+  font-weight: 500;
+}
+
+.result-item .value {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.nutritional-info {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #eee;
+}
+
+.nutritional-info h4 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.results-error {
+  text-align: center;
+  color: #e74c3c;
+  padding: 1rem;
+  background-color: #fdf3f2;
+  border-radius: 4px;
+}
+
+.results-error p {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Animation for results appearance */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.results-container {
+  animation: slideIn 0.3s ease-out;
+} 

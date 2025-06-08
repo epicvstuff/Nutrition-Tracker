@@ -1,10 +1,7 @@
 import os
 import tensorflow as tf
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dense
-from tensorflow.keras.optimizers import Adam
 import matplotlib.pyplot as plt
+import numpy as np
 
 # ----------------------
 # Configuration Settings
@@ -30,77 +27,100 @@ SEED = 42
 # Data Preparation & Augmentation
 # --------------------------
 
-# For the training set, we use data augmentation to enhance generalization.
-train_datagen = ImageDataGenerator(
-    rescale=1.0/255.0,
-    rotation_range=20,
-    width_shift_range=0.2,
-    height_shift_range=0.2,
-    zoom_range=0.2,
-    horizontal_flip=True
-)
-
-# For validation and testing, we only normalize the images.
-test_val_datagen = ImageDataGenerator(rescale=1.0/255.0)
-
-# Create the training data generator from the TRAIN_DIR.
-train_generator = train_datagen.flow_from_directory(
+# Create the training dataset with augmentation
+train_ds = tf.keras.utils.image_dataset_from_directory(
     TRAIN_DIR,
-    target_size=(IMG_WIDTH, IMG_HEIGHT),
-    batch_size=BATCH_SIZE,
-    class_mode='categorical',   # categorical for multi-class classification
-    seed=SEED
+    validation_split=0.2,
+    subset="training",
+    seed=SEED,
+    image_size=(IMG_HEIGHT, IMG_WIDTH),
+    batch_size=BATCH_SIZE
 )
 
-# Create the validation data generator from the VALIDATION_DIR.
-validation_generator = test_val_datagen.flow_from_directory(
+# Create the validation dataset
+val_ds = tf.keras.utils.image_dataset_from_directory(
     VALIDATION_DIR,
-    target_size=(IMG_WIDTH, IMG_HEIGHT),
-    batch_size=BATCH_SIZE,
-    class_mode='categorical',
-    seed=SEED
+    seed=SEED,
+    image_size=(IMG_HEIGHT, IMG_WIDTH),
+    batch_size=BATCH_SIZE
 )
 
-# Optional: Create a test data generator from the TEST_DIR.
-test_generator = test_val_datagen.flow_from_directory(
-    TEST_DIR,
-    target_size=(IMG_WIDTH, IMG_HEIGHT),
-    batch_size=BATCH_SIZE,
-    class_mode='categorical',
-    shuffle=False  # For evaluation, it's usually best to keep the order
-)
+# Create the test dataset (if exists)
+try:
+    test_ds = tf.keras.utils.image_dataset_from_directory(
+        TEST_DIR,
+        seed=SEED,
+        image_size=(IMG_HEIGHT, IMG_WIDTH),
+        batch_size=BATCH_SIZE,
+        shuffle=False
+    )
+    has_test_data = True
+except:
+    print("No test directory found, skipping test evaluation.")
+    has_test_data = False
 
-# Determine number of classes automatically from the training data
-num_classes = len(train_generator.class_indices)
+# Get number of classes
+class_names = train_ds.class_names
+num_classes = len(class_names)
 print("Number of classes:", num_classes)
+print("Class names:", class_names)
+
+# Normalize pixel values and apply data augmentation
+normalization_layer = tf.keras.layers.Rescaling(1./255)
+
+data_augmentation = tf.keras.Sequential([
+    tf.keras.layers.RandomFlip("horizontal"),
+    tf.keras.layers.RandomRotation(0.1),
+    tf.keras.layers.RandomZoom(0.1),
+])
+
+# Apply normalization and augmentation
+def prepare_ds(ds, shuffle=False, augment=False):
+    # Normalize pixel values
+    ds = ds.map(lambda x, y: (normalization_layer(x), y), num_parallel_calls=tf.data.AUTOTUNE)
+    
+    if shuffle:
+        ds = ds.shuffle(1000)
+    
+    # Apply data augmentation
+    if augment:
+        ds = ds.map(lambda x, y: (data_augmentation(x, training=True), y), num_parallel_calls=tf.data.AUTOTUNE)
+    
+    # Use buffered prefetching
+    return ds.prefetch(buffer_size=tf.data.AUTOTUNE)
+
+train_ds = prepare_ds(train_ds, shuffle=True, augment=True)
+val_ds = prepare_ds(val_ds)
+if has_test_data:
+    test_ds = prepare_ds(test_ds)
 
 # --------------------------
 # Build the CNN Model
 # --------------------------
-model = Sequential([
+model = tf.keras.Sequential([
     # First convolutional block
-    Conv2D(32, (3, 3), activation='relu', input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
-    MaxPooling2D(pool_size=(2, 2)),
+    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
+    tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
 
     # Second convolutional block
-    Conv2D(64, (3, 3), activation='relu'),
-    MaxPooling2D(pool_size=(2, 2)),
+    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
 
     # Third convolutional block
-    Conv2D(128, (3, 3), activation='relu'),
-    MaxPooling2D(pool_size=(2, 2)),
+    tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
 
     # Flattening layer to convert 3D feature maps to a 1D feature vector
-    Flatten(),
+    tf.keras.layers.Flatten(),
 
     # Dropout layer to reduce overfitting
-    Dropout(0.5),
+    tf.keras.layers.Dropout(0.5),
 
     # Dense layer for further feature extraction
-    Dense(512, activation='relu'),
+    tf.keras.layers.Dense(512, activation='relu'),
 
     # Output layer with softmax activation for multi-class classification
-    Dense(num_classes, activation='softmax')
+    tf.keras.layers.Dense(num_classes, activation='softmax')
 ])
 
 # Display the model summary for quick inspection
@@ -110,8 +130,8 @@ model.summary()
 # Compile the Model
 # --------------------------
 model.compile(
-    optimizer=Adam(),
-    loss='categorical_crossentropy',
+    optimizer=tf.keras.optimizers.Adam(),
+    loss='sparse_categorical_crossentropy',
     metrics=['accuracy']
 )
 
@@ -119,10 +139,8 @@ model.compile(
 # Train the Model
 # --------------------------
 history = model.fit(
-    train_generator,
-    steps_per_epoch=train_generator.samples // BATCH_SIZE,
-    validation_data=validation_generator,
-    validation_steps=validation_generator.samples // BATCH_SIZE,
+    train_ds,
+    validation_data=val_ds,
     epochs=EPOCHS
 )
 
@@ -135,8 +153,9 @@ print("Model saved as fruit_vegetable_classifier.h5")
 # --------------------------
 # Optional: Evaluate on the Test Set
 # --------------------------
-test_loss, test_accuracy = model.evaluate(test_generator, steps=test_generator.samples // BATCH_SIZE)
-print("Test Loss: {:.4f}, Test Accuracy: {:.4f}".format(test_loss, test_accuracy))
+if has_test_data:
+    test_loss, test_accuracy = model.evaluate(test_ds)
+    print("Test Loss: {:.4f}, Test Accuracy: {:.4f}".format(test_loss, test_accuracy))
 
 # --------------------------
 # Plot Training History

@@ -1,8 +1,9 @@
 .upload-section {
-  margin-bottom: var(--spacing-lg);
-  padding: var(--spacing-lg);
-  background-color: var(--light);
-  border-radius: var(--border-radius-md);
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--background-light);
 }
 
 .upload-section h3 {
@@ -13,47 +14,86 @@
 .upload-form {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: 1rem;
+  max-width: 500px;
 }
 
 .upload-form input[type="file"] {
-  padding: var(--spacing-sm);
-  border: 1px solid #ccc;
-  border-radius: var(--border-radius-sm);
-  background-color: white;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--background-white);
 }
 
 .upload-form button {
-  padding: var(--spacing-sm) var(--spacing-md);
-  background-color: var(--button-bg);
+  padding: 0.75rem 1.5rem;
+  background-color: var(--primary);
   color: white;
   border: none;
-  border-radius: var(--border-radius-sm);
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color var(--transition-normal), transform var(--transition-fast);
+  font-weight: 600;
+  transition: background-color 0.2s;
 }
 
 .upload-form button:hover {
-  background-color: var(--button-bg-hover);
-  transform: translateY(-2px);
+  background-color: var(--dark);
+}
+
+.upload-form button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 .upload-status {
-  margin-top: var(--spacing-sm);
-  padding: var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  background-color: #f8f9fa;
-  color: var(--dark);
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-weight: 500;
 }
 
-.upload-status.error {
-  background-color: #fee;
-  color: var(--accent);
+.upload-status.status-info {
+  background-color: var(--info-background);
+  color: var(--info-text);
+  border: 1px solid var(--info-border);
 }
 
-.upload-status.success {
-  background-color: #efe;
-  color: var(--success);
+.upload-status.status-success {
+  background-color: var(--success-background);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+}
+
+.upload-status.status-error {
+  background-color: var(--error-background);
+  color: var(--error-text);
+  border: 1px solid var(--error-border);
+}
+
+/* Loading animation */
+.upload-status.loading {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.upload-status.loading::before {
+  content: '';
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--primary-color);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
 }
 
 @media (max-width: 700px) {
