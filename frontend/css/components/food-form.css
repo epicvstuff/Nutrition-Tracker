@@ -1,0 +1,126 @@
+.food-form-section {
+  padding: var(--spacing-lg);
+  background: linear-gradient(135deg, #ddeeff, #f0f8ff);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.food-form-section h3 {
+  margin-bottom: var(--spacing-md);
+  font-size: 1.3em;
+}
+
+.food-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--spacing-md) var(--spacing-sm);
+  align-items: flex-end;
+}
+
+.food-name-group {
+  grid-column: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.food-name-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: var(--spacing-sm);
+}
+
+.food-name-input {
+  flex-grow: 1;
+}
+
+.clear-selection-button {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.9em;
+  background-color: #ffc107;
+  border: none;
+  color: #333;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  height: 36px;
+  line-height: 1.5;
+  transition: background-color var(--transition-normal);
+}
+
+.clear-selection-button:hover {
+  background-color: #e0a800;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.form-group input {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid #aac;
+  border-radius: var(--border-radius-sm);
+  transition: border-color var(--transition-normal);
+}
+
+.form-group input:focus {
+  border-color: var(--button-bg);
+  outline: none;
+}
+
+.form-group input:disabled,
+.form-group input:read-only {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.form-group small {
+  color: #666;
+  font-size: 0.8em;
+}
+
+.add-food-button-wrapper {
+  grid-column: 1 / -1;
+  margin-top: var(--spacing-sm);
+}
+
+.add-food-button {
+  width: 100%;
+  padding: var(--spacing-sm);
+  background-color: var(--success);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color var(--transition-normal), transform var(--transition-fast);
+}
+
+.add-food-button:hover {
+  background-color: #27ae60;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 700px) {
+  .food-name-group,
+  .form-group {
+    grid-column: 1 / -1;
+  }
+  
+  .food-name-wrapper {
+    flex-direction: column;
+  }
+  
+  .clear-selection-button {
+    width: 100%;
+  }
+} 

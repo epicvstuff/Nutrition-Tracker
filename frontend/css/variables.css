@@ -1,0 +1,37 @@
+:root {
+  /* Colors */
+  --primary: #2c3e50;        /* Dark blue-gray for text and headings */
+  --secondary: #ecf0f1;      /* Light grey for background accents */
+  --accent: #e74c3c;         /* Accent red for alerts or important info */
+  --button-bg: #3498db;      /* Blue for primary buttons */
+  --button-bg-hover: #2980b9;/* Darker blue for hover states */
+  --success: #2ecc71;        /* Green, used for success cues */
+  --light: #f4f4f4;          /* Light background color */
+  --dark: #34495e;           /* Slightly darker shade for text */
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+  
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  
+  /* Container */
+  --container-max-width: 900px;
+  --container-padding: 20px;
+} 

@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+@import 'variables.css';
+@import 'components/search.css';
+@import 'components/food-form.css';
+@import 'components/food-list.css';
+@import 'components/upload.css';
+
+/* Base Reset and Body Styling */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: var(--container-padding);
+  background: linear-gradient(135deg, var(--light), #ffffff);
+  color: var(--dark);
+}
+
+.container {
+  max-width: var(--container-max-width);
+  margin: auto;
+  background: #fff;
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* Typography */
+h1, h2, h3 {
+  text-align: center;
+  color: var(--primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Responsive Design */
+@media (max-width: 700px) {
+  .container {
+    padding: var(--spacing-md);
+  }
+  
+  body {
+    padding: var(--spacing-sm);
+  }
+} 

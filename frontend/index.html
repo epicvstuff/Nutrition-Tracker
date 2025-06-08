@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nutrition Tracker - Search & Manual</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Nutrition Tracker</h1>
+    
+    <div class="upload-section">
+      <h3>Upload an Image for Classification</h3>
+      <form id="upload-form" class="upload-form">
+        <input type="file" name="file" accept="image/*" required>
+        <button type="submit">Classify Image</button>
+      </form>
+      <div id="upload-status" class="upload-status"></div>
+    </div>
+
+    <div id="search-section" class="search-section">
+      <h3>1. Search for Food (Optional)</h3>
+      <label for="food-search">Enter food name:</label>
+      <div class="search-input-group">
+        <input type="text" id="food-search" class="search-input" placeholder="e.g., apple, cheddar cheese">
+        <button id="search-button" class="search-button">Search</button>
+      </div>
+      <div id="search-status" class="search-status"></div>
+      <ul id="search-results" class="search-results"></ul>
+    </div>
+
+    <div id="food-form-section" class="food-form-section">
+      <h3>2. Add Food to Log</h3>
+      <form id="food-form" class="food-form">
+        <div id="food-name-group" class="food-name-group">
+          <label for="food-name">Food Name:</label>
+          <div id="food-name-wrapper" class="food-name-wrapper">
+            <input type="text" id="food-name" class="food-name-input" required placeholder="Type name or select from search">
+            <button type="button" id="clear-selection-button" class="clear-selection-button" title="Clear selection and enable manual entry">Manual</button>
+          </div>
+        </div>
+
+        <div id="quantity-group" class="form-group">
+          <label for="quantity">Quantity (g):</label>
+          <input type="number" id="quantity" min="1" step="any" placeholder="Needed if food selected">
+          <small>(Enter quantity if selected from search)</small>
+        </div>
+
+        <div id="calories-group" class="form-group">
+          <label for="calories">Calories:</label>
+          <input type="number" id="calories" min="0" step="any" placeholder="Total kcal">
+        </div>
+
+        <div id="protein-group" class="form-group">
+          <label for="protein">Protein (g):</label>
+          <input type="number" id="protein" min="0" step="any" placeholder="Total g">
+        </div>
+
+        <div id="carbs-group" class="form-group">
+          <label for="carbs">Carbs (g):</label>
+          <input type="number" id="carbs" min="0" step="any" placeholder="Total g">
+        </div>
+
+        <div id="fat-group" class="form-group">
+          <label for="fat">Fat (g):</label>
+          <input type="number" id="fat" min="0" step="any" placeholder="Total g">
+        </div>
+
+        <div id="add-food-button-wrapper" class="add-food-button-wrapper">
+          <button type="submit" class="add-food-button">Add Food to Log</button>
+        </div>
+      </form>
+    </div>
+
+    <h2>Today's Log</h2>
+    <table class="food-list-table">
+      <thead>
+        <tr>
+          <th>Food</th>
+          <th>Qty (g)</th>
+          <th>Calories</th>
+          <th>Protein (g)</th>
+          <th>Carbs (g)</th>
+          <th>Fat (g)</th>
+        </tr>
+      </thead>
+      <tbody id="food-list">
+        <!-- Food items will be added here -->
+      </tbody>
+    </table>
+
+    <div id="totals" class="totals-section">
+      <h3>Daily Totals</h3>
+      <p>Total Calories: <span id="total-calories">0</span></p>
+      <p>Total Protein: <span id="total-protein">0</span> g</p>
+      <p>Total Carbs: <span id="total-carbs">0</span> g</p>
+      <p>Total Fat: <span id="total-fat">0</span> g</p>
+    </div>
+
+    <button id="reset-button" class="reset-button">Start New Day (Clear Log)</button>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
+
