@@ -212,11 +212,15 @@ npm test
 5. Adjust nutritional information if needed
 6. Add to your daily log
 
-### 2. Food Search
+### 2. Advanced Food Search
 1. Enter a food name in the search box
-2. Click "Search" to query OpenFoodFacts API
-3. Select from search results
-4. Enter quantity in grams
+2. Search automatically queries USDA database first
+3. Select from rich results showing:
+   - **USDA** (🏛️) or **OpenFoodFacts** (🌍) data source
+   - Complete nutrition preview
+   - Data quality indicators (Foundation, SR Legacy, etc.)
+4. Food data auto-populates in the form
+5. Enter quantity in grams and add to daily log
 5. Add to your log
 
 ### 3. Manual Entry

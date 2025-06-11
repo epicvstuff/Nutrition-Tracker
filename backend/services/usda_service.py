@@ -82,6 +82,19 @@ class USDAService:
             logger.error(f"Error searching USDA database: {str(e)}")
             return None
     
+    async def search_foods(self, food_name: str, limit: int = 10) -> Optional[List[Dict[str, Any]]]:
+        """
+        Search for multiple food items in USDA database (alias for search_food with different limit)
+        
+        Args:
+            food_name: Name of the food to search for
+            limit: Number of results to return (default: 10)
+            
+        Returns:
+            List of food items or None if error
+        """
+        return await self.search_food(food_name, limit)
+
     async def get_food_details(self, fdc_id: str) -> Optional[Dict[str, Any]]:
         """
         Get detailed nutritional information for a specific food item

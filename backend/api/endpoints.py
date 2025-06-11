@@ -1,8 +1,9 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException, Query
 from fastapi.responses import JSONResponse
 from PIL import Image
 import io
 from loguru import logger
+from typing import List, Optional
 
 from ..models.cnn_model import CNNModel
 from ..services.usda_service import usda_service
@@ -112,4 +113,91 @@ async def search_nutrition(food_name: str):
         raise HTTPException(
             status_code=500,
             detail=f"Error searching nutrition data: {str(e)}"
+        )
+
+@router.get("/search-foods")
+async def search_foods(
+    query: str = Query(..., description="Food name to search for"),
+    limit: int = Query(10, description="Maximum number of results to return", ge=1, le=50)
+):
+    """Search for multiple food items in USDA database."""
+    try:
+        logger.info(f"Searching USDA database for foods: {query} (limit: {limit})")
+        
+        # Search USDA database for multiple foods
+        search_results = await usda_service.search_foods(query, limit)
+        
+        if not search_results:
+            logger.warning(f"No foods found for query: {query}")
+            return JSONResponse(content={
+                "query": query,
+                "results": [],
+                "message": "No foods found in USDA database"
+            })
+        
+        # Format results for frontend
+        formatted_results = []
+        for food_item in search_results:
+            try:
+                # Get FDC ID from the correct field (fdcId in USDA response)
+                fdc_id = food_item.get("fdcId") or food_item.get("fdc_id")
+                if not fdc_id:
+                    logger.warning(f"No FDC ID found for food item: {food_item}")
+                    continue
+                
+                # Get detailed nutrition info for each food
+                food_details = await usda_service.get_food_details(str(fdc_id))
+                if food_details:
+                    # Extract nutrition data from the raw food details
+                    nutrition_info = usda_service._extract_nutrition_data(food_details, food_item["description"])
+                    formatted_results.append({
+                        "id": fdc_id,
+                        "name": food_item["description"],
+                        "data_type": food_item.get("dataType", "Unknown"),
+                        "nutrients": {
+                            "calories": nutrition_info.get("calories", 0),
+                            "protein": nutrition_info.get("protein", 0),
+                            "carbs": nutrition_info.get("carbs", 0),
+                            "fat": nutrition_info.get("fat", 0),
+                            "fiber": nutrition_info.get("fiber", 0),
+                            "sugars": nutrition_info.get("sugars", 0),
+                            "sodium": nutrition_info.get("sodium", 0)
+                        },
+                        "serving_size": nutrition_info.get("serving_size", "100g"),
+                        "source": "USDA FoodData Central"
+                    })
+            except Exception as e:
+                logger.warning(f"Failed to get details for {food_item['description']}: {str(e)}")
+                # Still add basic info even if detailed nutrition fails
+                formatted_results.append({
+                    "id": fdc_id,
+                    "name": food_item["description"],
+                    "data_type": food_item.get("dataType", "Unknown"),
+                    "nutrients": {
+                        "calories": 0,
+                        "protein": 0,
+                        "carbs": 0,
+                        "fat": 0,
+                        "fiber": 0,
+                        "sugars": 0,
+                        "sodium": 0
+                    },
+                    "serving_size": "100g",
+                    "source": "USDA FoodData Central"
+                })
+        
+        response = {
+            "query": query,
+            "results": formatted_results,
+            "total_found": len(formatted_results)
+        }
+        
+        logger.info(f"Successfully found {len(formatted_results)} foods for query: {query}")
+        return JSONResponse(content=response)
+        
+    except Exception as e:
+        logger.error(f"Error searching foods: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error searching foods: {str(e)}"
         ) 
