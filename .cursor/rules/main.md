@@ -70,7 +70,7 @@ Future enhancements could include user accounts, mobile app, improved AI model, 
 nutrition-tracker/
 ├── backend/           # FastAPI + ML model + USDA service
 ├── frontend/          # Static web app
-├── models/            # CNN model file (218MB, excluded from git)
+├── trained_models/    # CNN model file (218MB, excluded from git)
 ├── .env              # Environment variables (API keys)
 └── .cursor/rules/    # All cursor rules and documentation
     ├── main.md                    # Main overview (this file)

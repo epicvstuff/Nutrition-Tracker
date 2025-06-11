@@ -45,8 +45,8 @@ data/
 archive/
 
 # Large model files (too big for GitHub)
-models/*.h5
-models/*.hdf5
+trained_models/*.h5
+trained_models/*.hdf5
 
 # Temporary files
 *.tmp

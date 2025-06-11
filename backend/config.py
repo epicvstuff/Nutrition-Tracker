@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     
     # Model Settings
     MODEL_TYPE: str = "cnn"  # Can be "cnn" or "llm" in the future
-    MODEL_PATH: str = "models/fruit_vegetable_classifier.h5"
+    MODEL_PATH: str = "trained_models/fruit_vegetable_classifier.h5"
     IMG_WIDTH: int = 150
     IMG_HEIGHT: int = 150
     

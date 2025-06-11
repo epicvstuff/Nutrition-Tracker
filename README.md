@@ -4,7 +4,7 @@ A modern full-stack web application for tracking daily nutrition intake with AI-
 
 ## 🎯 CURRENT STATUS: FULLY FUNCTIONAL
 - ✅ **Backend API**: Running with USDA FoodData Central integration (350,000+ foods)
-- ✅ **Frontend UI**: Complete with corrected data flow and real-time nutrition display  
+- ✅ **Frontend UI**: Complete with multi-source search (USDA primary, OpenFoodFacts fallback)
 - ✅ **AI Classification**: 88.89% accuracy CNN model operational on 36 food categories
 - ✅ **End-to-End Workflow**: Image → AI → USDA → Frontend display working perfectly
 
@@ -12,7 +12,8 @@ A modern full-stack web application for tracking daily nutrition intake with AI-
 
 - **🔬 AI Food Classification**: Upload food images for automatic classification using a trained CNN model (88.89% accuracy)
 - **🏛️ USDA Integration**: Real nutritional data from USDA FoodData Central (350,000+ government-verified foods)
-- **🔍 Food Search**: Search for foods using the OpenFoodFacts API
+- **🔍 Advanced Food Search**: Multi-source search system with rich nutrition previews and data quality indicators
+- **🌍 Smart Fallback**: Automatic fallback to OpenFoodFacts when foods not found in USDA database
 - **✏️ Manual Entry**: Add custom foods with nutritional information
 - **📊 Daily Logging**: Track your daily food intake with real-time totals
 - **🧮 Nutritional Analytics**: View detailed nutrition profiles (calories, protein, carbs, fat, fiber, sugars, sodium)
@@ -28,12 +29,12 @@ This application consists of two main components:
 ### Backend (FastAPI + ML Model)
 - **Port**: 8000
 - **Technology**: Python, FastAPI, TensorFlow/Keras
-- **Features**: CNN-based food classification, RESTful API, automatic image preprocessing
+- **Features**: CNN-based food classification, USDA API integration, RESTful API, automatic image preprocessing
 
 ### Frontend (Static Web App)
 - **Port**: 3000
 - **Technology**: HTML5, CSS3, Vanilla JavaScript
-- **Features**: Modern responsive UI, real-time interaction with backend API
+- **Features**: Modern responsive UI, real-time interaction with backend API, multi-source search interface
 
 ## 📁 Project Structure
 
@@ -48,7 +49,7 @@ nutrition-tracker/
 │   │   └── cnn_model.py   # CNN implementation
 │   ├── api/               # API endpoints
 │   │   ├── __init__.py
-│   │   └── endpoints.py   # Classification endpoints
+│   │   └── endpoints.py   # Classification and search endpoints
 │   ├── services/          # External API services
 │   │   ├── __init__.py
 │   │   └── usda_service.py # USDA nutrition data service
@@ -68,8 +69,8 @@ nutrition-tracker/
 │   │   ├── components/    # UI components
 │   │   └── utils/         # Utility functions
 │   └── assets/            # Static assets
-├── models/                # Trained ML models (see models/README.md)
-│   └── fruit_vegetable_classifier.h5  # Large model (not in repo)
+├── trained_models/        # Trained ML model files
+│   └── fruit_vegetable_classifier.h5  # CNN model file (218MB - see setup below)
 ├── tests/                 # Test files
 ├── .env.example           # Environment variables template
 └── README.md              # This file
@@ -104,18 +105,31 @@ cp .env.example .env
 2. Sign up for a free API key
 3. Add your key to the `.env` file
 
-### 3. Get the Trained Model (Required)
-Since the model is too large for GitHub (218MB), choose one option:
+### 3. Set Up the AI Model (Required for Image Classification)
+
+The application requires a trained CNN model file (`fruit_vegetable_classifier.h5`) in the `trained_models/` directory. Since the model is too large for GitHub (218MB), choose one of these options:
+
+#### Option A: Train Your Own Model 🎯
 ```bash
-# Option A: Train your own model (requires dataset)
+# Download a food image dataset (see Training section below)
+# Then train the model:
 cd backend/training
 python classifier.py
+# Model will be saved to trained_models/fruit_vegetable_classifier.h5
+```
 
-# Option B: Download pre-trained model (contact maintainer)
-# See models/README.md for details
+#### Option B: Download Pre-trained Model (Recommended) 📥
+```bash
+# Contact repository maintainer for download link
+# Or check releases section for model downloads
+# Place downloaded file in trained_models/fruit_vegetable_classifier.h5
+```
 
-# Option C: Use mock predictions (for development)
-# Application will automatically use mock data if no model found
+#### Option C: Use Mock Predictions (Development) 🔧
+```bash
+# Application automatically uses mock predictions if no model found
+# Returns "apple" with 95% confidence for all images
+# Useful for frontend development and testing
 ```
 
 ### 4. Start the Backend API
@@ -145,24 +159,93 @@ python -m http.server 3000
 - **Accuracy**: 88.89% validation accuracy
 - **Input**: 150x150 RGB images
 - **Framework**: TensorFlow 2.16.1 / Keras 3.x
+- **File Size**: ~218 MB
+- **Format**: Keras HDF5 (.h5)
+
+### Model Integration
+The model is automatically loaded by the FastAPI backend when:
+1. The file exists in `trained_models/fruit_vegetable_classifier.h5`
+2. The application starts up
+3. No import errors occur
+
+If the model is missing, you'll see a warning in the logs:
+```
+WARNING: Could not load model from trained_models/fruit_vegetable_classifier.h5
+INFO: Using mock predictions instead
+```
 
 ### Supported Food Categories
 The model can classify 36 different foods:
-- Fruits: apple, banana, grapes, kiwi, lemon, mango, orange, pear, pineapple, pomegranate, watermelon
-- Vegetables: beetroot, bell pepper, cabbage, capsicum, carrot, cauliflower, corn, cucumber, eggplant, garlic, ginger, lettuce, onion, peas, potato, raddish, spinach, sweetcorn, sweetpotato, tomato, turnip
-- Others: chilli pepper, jalepeno, paprika, soy beans
+- **Fruits**: apple, banana, grapes, kiwi, lemon, mango, orange, pear, pineapple, pomegranate, watermelon
+- **Vegetables**: beetroot, bell pepper, cabbage, capsicum, carrot, cauliflower, corn, cucumber, eggplant, garlic, ginger, lettuce, onion, peas, potato, raddish, spinach, sweetcorn, sweetpotato, tomato, turnip
+- **Others**: chilli pepper, jalepeno, paprika, soy beans
+
+## 🎓 Model Training (Advanced)
+
+If you want to retrain the model or customize it for new food categories:
+
+### Training Data Setup
+
+#### Option 1: Kaggle Fruits and Vegetables Dataset
+1. Visit [Kaggle Food Classification Dataset](https://www.kaggle.com/datasets/moltean/fruits)
+2. Download and extract to `backend/training/archive/`
+3. Ensure the structure is:
+   ```
+   archive/
+   ├── train/
+   │   ├── apple/
+   │   ├── banana/
+   │   └── ... (other food categories)
+   ├── validation/
+   │   ├── apple/
+   │   ├── banana/
+   │   └── ... (other food categories)
+   └── test/ (optional)
+   ```
+
+#### Option 2: Custom Dataset
+- Organize your images in the same folder structure
+- Each class should have its own folder
+- Recommended: 80-100 images per class minimum
+
+### Training Process
+```bash
+cd backend/training
+python classifier.py
+```
+
+### Training Requirements
+- TensorFlow 2.16.1
+- At least 8GB RAM
+- GPU recommended for faster training
+- Dataset: ~2.17 GB for full training
+
+### Training Output
+The trained model will be saved as `trained_models/fruit_vegetable_classifier.h5` and automatically loaded by the application.
+
+You only need to retrain if you want to:
+- Add new food categories
+- Improve accuracy with more data
+- Customize for specific use cases
 
 ## 🥗 Nutrition Data Sources
 
-### USDA FoodData Central API
-- **Primary Source**: Real nutritional data from USDA database
+### USDA FoodData Central API (Primary)
 - **Coverage**: 350,000+ food items with detailed nutrient profiles
 - **Data Quality**: Government-verified nutritional information
-- **Fallback**: Mock data when USDA API unavailable
+- **Data Types**: Foundation, SR Legacy, Survey, Branded foods
+- **Update Frequency**: Regular USDA database updates
+
+### OpenFoodFacts API (Fallback)
+- **Coverage**: Community-driven database with global foods
+- **Data Quality**: Crowd-sourced, varies by product
+- **Fallback Logic**: Automatically used when USDA has no results
+- **Special Features**: Barcode scanning support, international foods
 
 ### API Endpoints
-- `POST /api/v1/classify` - Image classification with nutrition data
-- `GET /api/v1/search-nutrition/{food_name}` - Search nutrition by food name
+- `POST /api/v1/classify` - Image classification with USDA nutrition lookup
+- `GET /api/v1/search-foods` - Multi-source food search with rich previews
+- `GET /api/v1/search-nutrition/{food_name}` - Legacy nutrition search endpoint
 
 ## 🔧 Development
 
@@ -175,14 +258,6 @@ pip install -r requirements.txt
 # Run with auto-reload
 python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000 --reload
 ```
-
-### Model Training (Optional)
-If you want to retrain the model:
-```bash
-cd backend/training
-python classifier.py
-```
-Note: Requires a dataset in the `archive/` directory with train/validation/test folders.
 
 ### Frontend Development
 The frontend is a static web application:
@@ -204,24 +279,25 @@ npm test
 
 ## 📖 Usage Guide
 
-### 1. Image Classification
+### 1. AI Image Classification
 1. Click "Choose File" in the upload section
 2. Select a food image (JPG, PNG)
 3. Click "Classify Image"
-4. Review the predicted food and confidence score
-5. Adjust nutritional information if needed
-6. Add to your daily log
+4. Review the AI prediction and confidence score
+5. System automatically fetches USDA nutrition data
+6. Adjust quantity in grams if needed
+7. Click "Add Food to Log"
 
 ### 2. Advanced Food Search
 1. Enter a food name in the search box
-2. Search automatically queries USDA database first
-3. Select from rich results showing:
-   - **USDA** (🏛️) or **OpenFoodFacts** (🌍) data source
-   - Complete nutrition preview
-   - Data quality indicators (Foundation, SR Legacy, etc.)
-4. Food data auto-populates in the form
-5. Enter quantity in grams and add to daily log
-5. Add to your log
+2. System searches USDA database first, then OpenFoodFacts
+3. Select from rich search results showing:
+   - **Data Source**: 🏛️ USDA (government) or 🌍 OpenFoodFacts (community)
+   - **Complete Nutrition Preview**: calories, protein, carbs, fat, fiber, sugars, sodium
+   - **Data Quality Indicators**: Foundation, SR Legacy, Survey, Branded
+   - **Serving Size Information**: per 100g or per serving
+4. Click a result to auto-populate the form
+5. Enter quantity and add to your daily log
 
 ### 3. Manual Entry
 1. Click "Manual" to enable manual entry mode
@@ -229,8 +305,8 @@ npm test
 3. Click "Add Food to Log"
 
 ### 4. Daily Tracking
-- View all logged foods in the table
-- Monitor daily totals for calories and macronutrients
+- View all logged foods in the daily summary table
+- Monitor real-time totals for calories and macronutrients
 - Use "Start New Day" to clear the log
 
 ## 🛠️ Technologies Used
@@ -243,79 +319,38 @@ npm test
 - **Pillow**: Image processing
 - **Pydantic**: Data validation
 - **Uvicorn**: ASGI server
+- **aiohttp**: Async HTTP client for API calls
 
 ### Frontend
 - **HTML5**: Semantic markup
 - **CSS3**: Modern styling with Grid/Flexbox
 - **Vanilla JavaScript (ES6+)**: No framework dependencies
-- **Modules**: ES6 module system
+- **CSS Variables**: Consistent theming system
+- **Module Pattern**: Clean code organization
 
-### APIs
-- **OpenFoodFacts API**: Food database integration
-- **Custom ML API**: Image classification endpoint
-
-## 🔍 API Documentation
-
-The backend provides a RESTful API:
-
-### Endpoints
-- `GET /`: API information
-- `POST /api/v1/classify`: Image classification
-- `GET /api/v1/openapi.json`: OpenAPI schema
-
-### Interactive Documentation
-Visit http://127.0.0.1:8000/docs for Swagger UI documentation.
-
-## 🌐 Browser Support
-
-- Chrome 80+
-- Firefox 80+
-- Safari 14+
-- Edge 80+
-
-Requirements:
-- ES6 Modules support
-- CSS Grid and Flexbox
-- Fetch API
-- Local Storage
+### External APIs
+- **USDA FoodData Central**: Government nutrition database
+- **OpenFoodFacts**: Community nutrition database
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Troubleshooting
+## 👨‍💻 Author
 
-### Common Issues
+Created with ❤️ for healthier eating habits.
 
-**Backend won't start:**
-- Ensure Python 3.8+ is installed
-- Install requirements: `pip install -r backend/requirements.txt`
-- Run from project root: `python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000`
+## 🙏 Acknowledgments
 
-**Frontend won't load:**
-- Start server from frontend directory: `cd frontend && python -m http.server 3000`
-- Check that port 3000 isn't already in use
-
-**Model predictions incorrect:**
-- Ensure model file exists at `models/fruit_vegetable_classifier.h5`
-- Check image quality and lighting
-- Model works best with clear, well-lit food images
-
-**CORS errors:**
-- Ensure both frontend (port 3000) and backend (port 8000) are running
-- Check browser console for specific error messages
-
-## 🎯 Performance Notes
-
-- First model load may take 10-30 seconds
-- Image classification typically takes 1-3 seconds
-- Frontend caches API responses for better performance
-- Model requires ~250MB RAM when loaded
+- **USDA FoodData Central**: For providing comprehensive nutrition data
+- **OpenFoodFacts**: For community-driven food database
+- **TensorFlow/Keras**: For machine learning framework
+- **FastAPI**: For excellent Python web framework

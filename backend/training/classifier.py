@@ -147,8 +147,10 @@ history = model.fit(
 # --------------------------
 # Save the Trained Model
 # --------------------------
-model.save("fruit_vegetable_classifier.h5")
-print("Model saved as fruit_vegetable_classifier.h5")
+# Create the trained_models directory if it doesn't exist
+os.makedirs("../../trained_models", exist_ok=True)
+model.save("../../trained_models/fruit_vegetable_classifier.h5")
+print("Model saved as trained_models/fruit_vegetable_classifier.h5")
 
 # --------------------------
 # Optional: Evaluate on the Test Set
