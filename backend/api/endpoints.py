@@ -4,10 +4,22 @@ from PIL import Image
 import io
 from loguru import logger
 from typing import List, Optional
+from pydantic import BaseModel
 
 from ..models.cnn_model import CNNModel
 from ..services.usda_service import usda_service
+from ..services.gemini_service import gemini_service
 from ..config import settings
+
+
+# Pydantic models for chat
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    message: str
+    history: List[ChatMessage] = []
 
 router = APIRouter()
 model = CNNModel()
@@ -200,4 +212,29 @@ async def search_foods(
         raise HTTPException(
             status_code=500,
             detail=f"Error searching foods: {str(e)}"
-        ) 
+        )
+
+
+@router.post("/chat")
+async def chat_with_assistant(request: ChatRequest):
+    """Chat with the nutrition expert AI assistant."""
+    try:
+        logger.info(f"Chat request: {request.message[:50]}...")
+        
+        # Convert history to list of dicts
+        history = [{"role": msg.role, "content": msg.content} for msg in request.history]
+        
+        response = await gemini_service.chat(request.message, history)
+        
+        logger.info("Chat response generated successfully")
+        return JSONResponse(content={
+            "response": response,
+            "status": "success"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in chat endpoint: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing chat: {str(e)}"
+        )

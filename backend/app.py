@@ -6,6 +6,7 @@ import sys
 from .config import settings
 from .api.endpoints import router
 from .services.usda_service import usda_service
+from .services.gemini_service import gemini_service
 
 # Configure logging
 logger.remove()
@@ -38,13 +39,18 @@ async def startup_event():
         logger.info("USDA API key configured - real nutrition data available")
     else:
         logger.warning("USDA API key not configured - using fallback nutrition data")
+    if settings.GEMINI_API_KEY:
+        logger.info("Gemini API key configured - AI chat assistant available")
+    else:
+        logger.warning("Gemini API key not configured - chat assistant disabled")
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Clean up resources on shutdown."""
     logger.info("Shutting down Nutrition Tracker API...")
     await usda_service.close_session()
-    logger.info("USDA service session closed")
+    await gemini_service.close_session()
+    logger.info("All service sessions closed")
 
 # Include API router
 app.include_router(router, prefix=settings.API_V1_STR)

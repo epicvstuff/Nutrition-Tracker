@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     USDA_API_KEY: str = ""
     USDA_BASE_URL: str = "https://api.nal.usda.gov/fdc/v1"
     
+    # Gemini API Settings
+    GEMINI_API_KEY: str = "AIzaSyBQBWUPpjsEvksbUDaN4tPIXzk4w6fmGyg"
+    
     # Server Settings
     HOST: str = "127.0.0.1"
     PORT: int = 8000

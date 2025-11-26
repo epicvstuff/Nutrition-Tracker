@@ -3,6 +3,7 @@ import SearchComponent from './components/search.js';
 import FoodFormComponent from './components/foodForm.js';
 import FoodListComponent from './components/foodList.js';
 import UploadComponent from './components/upload.js';
+import ChatComponent from './components/chat.js';
 
 class NutritionTracker {
   constructor() {
@@ -11,6 +12,7 @@ class NutritionTracker {
     this.foodForm = new FoodFormComponent(this.handleAddFood.bind(this));
     this.search = new SearchComponent(this.handleFoodSelect.bind(this));
     this.upload = new UploadComponent(this.handleFoodClassified.bind(this));
+    this.chat = new ChatComponent(this.handleAddFoodFromChat.bind(this));
 
     this.initialize();
   }
@@ -64,6 +66,20 @@ class NutritionTracker {
     const updatedLog = this.foodService.clearFoodLog();
     this.updateUI(updatedLog);
     this.foodForm.clearSelection();
+  }
+
+  handleAddFoodFromChat(nutritionData) {
+    // Add food directly from the chat assistant
+    console.log('Adding food from chat:', nutritionData);
+    const food = {
+      name: nutritionData.name,
+      quantity: null, // No quantity for chat-added items
+      calories: nutritionData.calories,
+      protein: nutritionData.protein,
+      carbs: nutritionData.carbs,
+      fat: nutritionData.fat
+    };
+    this.handleAddFood(food);
   }
 }
 

@@ -4,6 +4,7 @@
 @import 'components/food-form.css';
 @import 'components/food-list.css';
 @import 'components/upload.css';
+@import 'components/chat.css';
 
 /* Base Reset and Body Styling */
 * {
