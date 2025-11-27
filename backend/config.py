@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     USDA_BASE_URL: str = "https://api.nal.usda.gov/fdc/v1"
     
     # Gemini API Settings
-    GEMINI_API_KEY: str = "AIzaSyBQBWUPpjsEvksbUDaN4tPIXzk4w6fmGyg"
+    GEMINI_API_KEY: str = ""  # Set via GEMINI_API_KEY environment variable or .env file
     
     # Server Settings
     HOST: str = "127.0.0.1"
